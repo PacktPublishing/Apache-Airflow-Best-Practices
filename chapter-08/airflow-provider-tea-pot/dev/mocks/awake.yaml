@@ -1,0 +1,10 @@
+---
+request:
+  method: GET
+  path: "/health"
+response:
+  statusCode: 200
+  headers:
+    Content-Type:
+    - application/json
+  body: '{ "ready" }'
