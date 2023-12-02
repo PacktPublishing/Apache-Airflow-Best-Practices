@@ -1,5 +1,5 @@
 version: '3'
-name: airflow-provider-coffee-pot
+name: airflow-provider-tea-pot
 # ====================================== AIRFLOW ENVIRONMENT VARIABLES =======================================
 x-airflow-common:
   &airflow-common
@@ -7,7 +7,7 @@ x-airflow-common:
     context: ..
     dockerfile: dev/Dockerfile
     args:
-      IMAGE_NAME: "${IMAGE_NAME:-apache/airflow:2.4.3}"
+      IMAGE_NAME: "${IMAGE_NAME:-apache/airflow:2.5.0}"
   user: "${AIRFLOW_UID}:0"
   environment:
     &airflow-common-env
@@ -26,17 +26,10 @@ x-airflow-common:
   volumes:
     - ../example_dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
-    - ../airflow_provider_coffee_pot:/opt/airflow/airflow_provider_coffee_pot
+    - ../airflow_provider_tea_pot:/opt/airflow/airflow_provider_tea_pot
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 
 services:
-  coffee-pot:
-    image: jordimartin/mmock
-    volumes:
-      - ../dev/mocks:/config:ro
-    ports:
-      - "8083:8083"
-      - "8082:8082"
   postgres:
     image: postgres:15-alpine
     environment:

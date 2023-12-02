@@ -10,7 +10,7 @@ class TeaPotSensor(BaseSensorOperator):
 
     template_fields = ()
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         raise NotImplementedError("You need to implement an __init__ method for this class")
 

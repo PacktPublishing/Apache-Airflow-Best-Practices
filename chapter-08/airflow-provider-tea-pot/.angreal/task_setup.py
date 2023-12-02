@@ -7,7 +7,10 @@ import subprocess
 venv_location = os.path.join(angreal.get_root(),'..','.venv')
 cwd = os.path.join(angreal.get_root(), '..')
 
-@angreal.command(name='dev-setup', about="setup a development environment")
+dev = angreal.command_group(name="dev",about="commands for your development environment")
+
+@dev()
+@angreal.command(name='setup', about="setup a development environment")
 def setup_env():
     VirtualEnv(venv_location, now=True, requirements=".[dev]").install_requirements()
     subprocess.run(
