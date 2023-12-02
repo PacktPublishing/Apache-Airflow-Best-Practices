@@ -28,7 +28,14 @@ x-airflow-common:
     - logs:/opt/airflow/logs
     - ../airflow_provider_tea_pot:/opt/airflow/airflow_provider_tea_pot
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
-
+services:
+  tea-pot:
+    image: jordimartin/mmock
+    volumes:
+      - ../dev/mocks:/config:ro
+    ports:
+      - "8083:8083"
+      - "8082:8082"
 services:
   postgres:
     image: postgres:15-alpine

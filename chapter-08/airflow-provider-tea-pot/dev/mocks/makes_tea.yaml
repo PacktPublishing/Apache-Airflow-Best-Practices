@@ -1,0 +1,10 @@
+---
+request:
+  method: POST
+  path: "/make_tea"
+response:
+  statusCode: 200
+  headers:
+    Content-Type:
+    - application/json
+  body: '{ "success" }'
