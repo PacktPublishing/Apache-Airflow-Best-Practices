@@ -1,15 +1,11 @@
 
 
-
-
-
-
-
 from __future__ import annotations
 import logging
 import typing
 
 from airflow.hooks.base import BaseHook
+from airflow.compat.functools import cached_property
 
 logger = logging.getLogger("airflow")
 
@@ -17,7 +13,7 @@ class TeaPotHook(BaseHook):
     """
     A simple hook that allows us to interact with our smart Tea Pot.
 
-    :param sample_conn_id: connection that has the base url for the tea pot 
+    :param sample_conn_id: connection that has the base url for the tea pot
     :type sample_conn_id: str
     """
 
@@ -33,13 +29,14 @@ class TeaPotHook(BaseHook):
     ) -> None:
         super().__init__()
         self.tea_pot_conn_id = tea_pot_conn_id
+        self.get_conn
 
+    @cached_property
     def get_conn(self) -> typing.Any:
-        """
-        A method for getting a connection to an external service given your connection information.
-        """
-        conn = self.get_connection(self.sample_conn_id)
-        return conn
+        """get our actual connection object from the database"""
+        config = self.get_connection(self.tea_pot_conn_id)
+        return config
+
 
     @staticmethod
     def get_connection_form_widgets() -> dict[str, typing.Any]:
@@ -56,8 +53,25 @@ class TeaPotHook(BaseHook):
 
     def test_connection(self) -> typing.Tuple[bool, str]:
         """Test a connection"""
-        x = self.get_conn()
-        alive = True 
+        self.get_conn()
+        alive = True
         if alive:
-            return [True, "Alive"]
-        return [False, "Not Alive"]
+            return (True, "Alive")
+        return (False, "Not Alive")
+
+
+    def is_ready(self) -> bool :
+        self.get_conn()
+        return True
+
+    def make_tea(self) -> str:
+        self.get_conn()
+        return ''
+
+    def brew_coffee(self) -> str:
+        self.get_conn()
+        return ''
+
+    def get_water_level(self) -> float:
+        self.get_conn()
+        return 0.0
