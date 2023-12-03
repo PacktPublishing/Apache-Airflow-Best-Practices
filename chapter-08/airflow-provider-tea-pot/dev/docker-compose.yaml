@@ -36,7 +36,6 @@ services:
     ports:
       - "8083:8083"
       - "8082:8082"
-services:
   postgres:
     image: postgres:15-alpine
     environment:

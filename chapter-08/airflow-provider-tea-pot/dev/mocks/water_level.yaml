@@ -1,0 +1,10 @@
+---
+request:
+  method: GET
+  path: "/water_level"
+response:
+  statusCode: 200
+  headers:
+    Content-Type:
+    - application/json
+  body: "{{fake.Float(1)}}"
