@@ -41,17 +41,17 @@ class TeaPotHook(BaseHook):
         conn = self.get_connection(self.sample_conn_id)
         return conn
 
-    # @staticmethod
-    # def get_connection_form_widgets() -> dict[str, typing.Any]:
-    #     """Returns connection widgets to add to connection form"""
-    #     return {
-    #         }
+    @staticmethod
+    def get_connection_form_widgets() -> dict[str, typing.Any]:
+        """Returns connection widgets to add to connection form"""
+        return {
+            }
 
-    # @staticmethod
-    # def get_ui_field_behaviour() -> dict:
-    #     """Returns custom field behaviour"""
-    #     return {
-    #         }
+    @staticmethod
+    def get_ui_field_behaviour() -> dict:
+        """Returns custom field behaviour"""
+        return {
+            }
 
 
     def test_connection(self) -> typing.Tuple[bool, str]:
