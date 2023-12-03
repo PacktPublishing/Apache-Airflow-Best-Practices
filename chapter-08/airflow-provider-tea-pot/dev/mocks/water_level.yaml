@@ -7,4 +7,4 @@ response:
   headers:
     Content-Type:
     - application/json
-  body: "{{fake.Float(1)}}"
+  body: "{ {{fake.Float(1)}} }"

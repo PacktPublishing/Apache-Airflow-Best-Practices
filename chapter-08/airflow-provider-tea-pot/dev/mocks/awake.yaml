@@ -1,7 +1,7 @@
 ---
 request:
   method: GET
-  path: "/health"
+  path: "/ready"
 response:
   statusCode: 200
   headers:

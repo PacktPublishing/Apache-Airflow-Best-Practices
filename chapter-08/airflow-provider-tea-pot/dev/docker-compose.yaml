@@ -23,10 +23,10 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__STATSD_ON: True
     AIRFLOW__SCHEDULER__STATSD_PORT: 9125
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW__LOGGING__LOGGING_LEVEL: 'DEBUG'
   volumes:
     - ../example_dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
-    - ../airflow_provider_tea_pot:/opt/airflow/airflow_provider_tea_pot
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 services:
   tea-pot:
@@ -36,6 +36,7 @@ services:
     ports:
       - "8083:8083"
       - "8082:8082"
+
   postgres:
     image: postgres:15-alpine
     environment:
