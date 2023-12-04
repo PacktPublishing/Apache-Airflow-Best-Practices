@@ -7,6 +7,8 @@ import requests
 
 from airflow.hooks.base import BaseHook
 from airflow.compat.functools import cached_property
+from airflow.exceptions import AirflowException
+
 
 logger = logging.getLogger("airflow")
 
@@ -51,7 +53,6 @@ class TeaPotHook(BaseHook):
     @staticmethod
     def get_ui_field_behaviour() -> dict:
         """Updates our connection field  form behaviors"""
-        import json
         return {
             "hidden_fields": ["password", "login", "schema", "extra"], # we hide these fields
             "placeholders": { # we provide examples for these fields
@@ -70,7 +71,7 @@ class TeaPotHook(BaseHook):
         self.url = f"{conn.host}:{conn.port}"
         self.pot_designator = conn.extra_dejson.get("pot_designator",None)
         self.additions = conn.extra_dejson.get("additions",None)
-        return 
+        return
 
     def test_connection(self) -> typing.Tuple[bool, str]:
         """Test a connection"""
@@ -88,13 +89,21 @@ class TeaPotHook(BaseHook):
 
     def make_tea(self) -> str:
         self.get_conn
-        return requests.get(f"http://{self.url}/ready")
-        
-        
-        
+        response = requests.get(f"http://{self.url}/ready")
+        if response.status_code == 200: 
+            return response.text
+        raise AirflowException(f"{response.status_code} : {response.reason}")
 
-    def brew_coffee(self) -> str:
-        return ''
+    def brew_coffee(self) -> typing.Tuple(int,str):
+        self.get_conn
+        response = requests.get(f"http://{self.url}/ready")
+        if response.status_code == 200: 
+            return response.text
+        raise AirflowException(f"{response.status_code} : {response.reason}")
 
-    def get_water_level(self) -> float:
-        return 0.0
+    def get_water_level(self) -> typing.Tuple(int,str):
+        self.get_conn
+        response = requests.get(f"http://{self.url}/ready")
+        if response.status_code == 200: 
+            return response.text
+        raise AirflowException(f"{response.status_code} : {response.reason}")
