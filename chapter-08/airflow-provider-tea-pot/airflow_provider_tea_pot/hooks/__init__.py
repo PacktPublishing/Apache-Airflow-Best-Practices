@@ -74,22 +74,24 @@ class TeaPotHook(BaseHook):
 
     def test_connection(self) -> typing.Tuple[bool, str]:
         """Test a connection"""
-        
-        alive = self.is_ready()
-        if alive:
+        if self.is_ready():
             return (True, "Alive")
         return (False, "Not Alive")
 
 
     def is_ready(self) -> bool :
         self.get_conn
-        response = requests.get(f"{self.url}/ready")
+        response = requests.get(f"http://{self.url}/ready")
         if response.status_code == 200:
             return True
         return False
 
     def make_tea(self) -> str:
-        return ''
+        self.get_conn
+        return requests.get(f"http://{self.url}/ready")
+        
+        
+        
 
     def brew_coffee(self) -> str:
         return ''
