@@ -43,7 +43,7 @@ class TeaPotHook(BaseHook):
 
         # We create two new fields for our smart tea pot connection
         # pot_designator - for if we have a smart tea pot with multiple caraffes
-        # additions - for descibing anything we'd like to add to our tea
+        # additions - for describing anything we'd like to add to our tea
         # these fields will be stored in the extras dictionary of the connection object
         return {
             "pot_designator": StringField(lazy_gettext("Pot Designator"), widget=BS3TextFieldWidget()),
@@ -87,23 +87,22 @@ class TeaPotHook(BaseHook):
             return True
         return False
 
+    def __check_and_return(self, response) -> str:
+        if response.status_code == 200:
+            return str(response.text)
+        raise AirflowException(f"{response.status_code} : {response.reason}")
+
     def make_tea(self) -> str:
         self.get_conn
         response = requests.get(f"http://{self.url}/ready")
-        if response.status_code == 200: 
-            return response.text
-        raise AirflowException(f"{response.status_code} : {response.reason}")
+        return self.__check_and_return(response)
 
-    def brew_coffee(self) -> typing.Tuple(int,str):
+    def brew_coffee(self) -> str:
         self.get_conn
         response = requests.get(f"http://{self.url}/ready")
-        if response.status_code == 200: 
-            return response.text
-        raise AirflowException(f"{response.status_code} : {response.reason}")
+        return self.__check_and_return(response)
 
-    def get_water_level(self) -> typing.Tuple(int,str):
+    def get_water_level(self) -> str:
         self.get_conn
         response = requests.get(f"http://{self.url}/ready")
-        if response.status_code == 200: 
-            return response.text
-        raise AirflowException(f"{response.status_code} : {response.reason}")
+        return self.__check_and_return(response)

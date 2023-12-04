@@ -31,10 +31,10 @@ def test_is_ready():
 
     with patch("requests.get") as mocked_requests_get:
         mocked_requests_get.return_value.status_code = 500
-        assert hook.is_ready() == False     
+        assert hook.is_ready() is False
 
         mocked_requests_get.return_value.status_code = 200
-        assert hook.is_ready() == True     
+        assert hook.is_ready() is True
 
 
 def test_make_tea():
@@ -45,7 +45,7 @@ def test_make_tea():
     with patch("requests.get") as mocked_requests_get:
         mocked_requests_get.return_value.status_code = 200
         mocked_requests_get.return_value.text = "successful"
-        assert hook.make_tea() == "successful"   
+        assert hook.make_tea() == "successful"
 
         with pytest.raises(AirflowException):
             mocked_requests_get.return_value.status_code = 400
@@ -60,7 +60,7 @@ def test_brew_coffee():
     with patch("requests.get") as mocked_requests_get:
         mocked_requests_get.return_value.status_code = 200
         mocked_requests_get.return_value.text = "successful"
-        assert hook.brew_coffee() == "successful"   
+        assert hook.brew_coffee() == "successful"
 
         with pytest.raises(AirflowException):
             mocked_requests_get.return_value.status_code = 400
@@ -75,7 +75,7 @@ def test_get_water_level():
     with patch("requests.get") as mocked_requests_get:
         mocked_requests_get.return_value.status_code = 200
         mocked_requests_get.return_value.text = "successful"
-        assert hook.get_water_level() == "successful"   
+        assert hook.get_water_level() == "successful"
 
         with pytest.raises(AirflowException):
             mocked_requests_get.return_value.status_code = 400
