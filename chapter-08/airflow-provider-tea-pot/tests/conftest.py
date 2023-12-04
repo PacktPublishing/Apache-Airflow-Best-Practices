@@ -27,7 +27,7 @@ def suppress_logging(namespace):
 
 
 @pytest.mark.filterwarnings("ignore:DeprecationWarning")
-@pytest.fixture(autouse=True,scope='module')
+@pytest.fixture(autouse=True,scope='session')
 def initdb():
     """Create a database for every testing session and add connections to it."""
 

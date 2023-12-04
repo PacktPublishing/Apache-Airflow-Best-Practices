@@ -7,4 +7,4 @@ response:
   headers:
     Content-Type:
     - application/json
-  body: '{ "success" }'
+  body: '{ "message": "success" }'

@@ -7,4 +7,4 @@ response:
   headers:
     Content-Type:
     - application/json
-  body: '{ "I am a teapot." }'
+  body: '{ "message": "I am a teapot." }'

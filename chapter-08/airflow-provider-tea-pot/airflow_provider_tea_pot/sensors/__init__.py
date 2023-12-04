@@ -1,21 +1,28 @@
 import typing
-from airflow.sensors.base import BaseSensorOperator, PokeReturnValue
+from airflow.models import BaseOperator
+
+from airflow_provider_tea_pot.triggers import WaterLevelTrigger
 
 
-def method_for_checking_state():
-    """A method for checking on something when we poke"""
-    pass
 
-class TeaPotSensor(BaseSensorOperator):
+
+class WaterLevelSensor(BaseOperator):
 
     template_fields = ()
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, tea_pot_conn_id, minimum_level, **kwargs) -> None:
         super().__init__(**kwargs)
-        raise NotImplementedError("You need to implement an __init__ method for this class")
+        self.tea_pot_conn_id = tea_pot_conn_id
+        self.minimum_level = minimum_level
 
-    def poke(self, context) -> typing.Union[PokeReturnValue, bool]:
 
-        raise NotImplementedError("You need to implement a poke method for this class")
-        return_value = method_for_checking_state()
-        return PokeReturnValue(bool(return_value))
+    def execute(self, context) -> typing.Any:
+
+        self.defer(
+            trigger=WaterLevelTrigger(tea_pot_conn_id=self.tea_pot_conn_id,
+                                      minimum_level=self.minimum_level),
+            method_name="execute_complete"
+        )
+
+    def execute_complete(self, context, event=None):
+        return event

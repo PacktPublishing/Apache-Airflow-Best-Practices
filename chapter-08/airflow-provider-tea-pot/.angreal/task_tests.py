@@ -26,11 +26,11 @@ def run_tests(integration=False,full=False,open=False):
     output_file = os.path.realpath(os.path.join(cwd,'htmlcov','index.html'))
 
     if integration:
-        subprocess.run(f"{venv_python} -mpytest -vvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/integration",shell=True, cwd=cwd)
+        subprocess.run(f"{venv_python} -mpytest -svvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/integration",shell=True, cwd=cwd)
     if full:
-        subprocess.run(f"{venv_python} -m pytest -vvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/",shell=True, cwd=cwd)
+        subprocess.run(f"{venv_python} -m pytest -svvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/",shell=True, cwd=cwd)
     if not integration and not full:
-        subprocess.run(f"{venv_python} -m pytest -vvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/unit",shell=True, cwd=cwd)
+        subprocess.run(f"{venv_python} -m pytest -svvv --cov=airflow_provider_tea_pot --cov-report html --cov-report term tests/unit",shell=True, cwd=cwd)
     if open:
         webbrowser.open_new('file://{}'.format(output_file))
 
