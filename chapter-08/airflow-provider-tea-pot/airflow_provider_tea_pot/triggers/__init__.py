@@ -23,7 +23,7 @@ class WaterLevelTrigger(BaseTrigger):
 
     def serialize(self) -> typing.Tuple[str,typing.Dict[str,typing.Any]]:
 
-        return "airflow_provider_tea_pot.triggers.TeaPotTrigger",{
+        return "airflow_provider_tea_pot.triggers.WaterLevelTrigger",{
                     "minimum_level" : self.minimum_level,
                     "tea_pot_conn_id" : self.tea_pot_conn_id
                     }
@@ -36,5 +36,6 @@ class WaterLevelTrigger(BaseTrigger):
 
         while True:
             rv = await async_get_water_level()
+            logger.info(f"returned value : {rv}")
             if json.loads(rv).get('level') > self.minimum_level :
                 yield TriggerEvent(rv)

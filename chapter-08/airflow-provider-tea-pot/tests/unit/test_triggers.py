@@ -15,7 +15,7 @@ def test_water_level_trigger():
 
     classpath, kwargs = trigger.serialize()
 
-    assert classpath == "airflow_provider_tea_pot.triggers.TeaPotTrigger"
+    assert classpath == "airflow_provider_tea_pot.triggers.WaterLevelTrigger"
     assert kwargs == dict(tea_pot_conn_id = "tea_pot_other",
         minimum_level = 0.25)
 

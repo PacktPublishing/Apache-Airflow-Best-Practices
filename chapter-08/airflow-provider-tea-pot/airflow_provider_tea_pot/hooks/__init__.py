@@ -94,15 +94,15 @@ class TeaPotHook(BaseHook):
 
     def make_tea(self) -> str:
         self.get_conn
-        response = requests.get(f"http://{self.url}/ready")
+        response = requests.get(f"http://{self.url}/make_tea")
         return self.__check_and_return(response)
 
     def brew_coffee(self) -> str:
         self.get_conn
-        response = requests.get(f"http://{self.url}/ready")
+        response = requests.get(f"http://{self.url}/brew_coffee")
         return self.__check_and_return(response)
 
     def get_water_level(self) -> str:
         self.get_conn
-        response = requests.get(f"http://{self.url}/ready")
+        response = requests.get(f"http://{self.url}/water_level")
         return self.__check_and_return(response)
