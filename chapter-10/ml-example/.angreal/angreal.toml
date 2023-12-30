@@ -1,0 +1,2 @@
+airflow_name = "ml-example"
+airflow_version = "2.5.0"
