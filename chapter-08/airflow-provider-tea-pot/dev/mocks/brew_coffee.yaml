@@ -1,0 +1,10 @@
+---
+request:
+  method: POST
+  path: "/brew_coffee"
+response:
+  statusCode: 408
+  headers:
+    Content-Type:
+    - application/json
+  body: '{ "message": "I am a teapot." }'
