@@ -24,11 +24,32 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__STATSD_PORT: 9125
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
   volumes:
-    - ../example_dags:/opt/airflow/dags
+    - ../dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 
 services:
+  minio:
+    image: minio/minio:latest
+    command: minio server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: "airflow"
+      MINIO_ROOT_PASSWORD: "airflow"
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - ./data:/data
+  pgvector:
+    image: ankane/pgvector
+    volumes:
+      - ${PWD}/include/postgres:/var/lib/postgresql/data
+      - ${PWD}/include:/include
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
   postgres:
     image: postgres:15-alpine
     environment:

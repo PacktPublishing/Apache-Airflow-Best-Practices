@@ -8,7 +8,7 @@ import polars as pl
 import numpy as np
 
 from airflow.models import Variable
-from airflow.hooks.S3_hooks import S3Hook
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 DATASET_LOCATION='https://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
 DATASET_HASH_LOCATION='https://files.grouplens.org/datasets/movielens/ml-latest-small.zip.md5'
