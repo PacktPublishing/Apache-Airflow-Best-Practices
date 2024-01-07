@@ -53,15 +53,6 @@ with DAG(
         sql="CREATE EXTENSION IF NOT EXISTS vector;",
     )
     
-    create_movie_vector_table = PostgresOperator(
-        task_id='create_movie_vector_table',        
-        sql=f'''CREATE TABLE IF NOT EXISTS '{{ key='hash_id', task_ids="data_is_new" }}' (          
-                movieId INTEGER PRIMARY KEY,
-                vector VECTOR('{{ key='movie_watcher_df.parquet.vector_length', task_ids="generate_data_frames" }}'))
-        );
-        '''
-    )
-
     load_movie_vectors = PythonOperator(
         task_id="load_movie_vectors",
         python_callable = _load_movie_vectors,
@@ -91,7 +82,7 @@ with DAG(
 data_is_new >> do_nothing
 data_is_new >> fetch_dataset >> generate_data_frames
 
-generate_data_frames >> enable_vector_extension >> create_movie_vector_table >> load_movie_vectors >> join_no_op
+generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> join_no_op
 # generate_data_frames >> train_deep_learning_model >> join_no_op
 
 join_no_op >> swap_knn_vector_table

@@ -23,6 +23,8 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__STATSD_ON: True
     AIRFLOW__SCHEDULER__STATSD_PORT: 9125
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW_CONN_RECSYS_S3: '{"conn_type": "aws","extra": { "aws_access_key_id": "airflow123","aws_secret_access_key": "airflow123","endpoint_url": "http://minio:9000", "region_name": "us-east-1"}}'
+    AIRFLOW_CONN_RECSYS_PG_VECTOR_BACKEND: '{"conn_type": "postgres", "host": "pgvector", "login": "postgres", "password": "postgres", "port": "5432"}'
   volumes:
     - ../dags:/opt/airflow/dags
     - logs:/opt/airflow/logs

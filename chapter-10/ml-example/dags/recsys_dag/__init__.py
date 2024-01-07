@@ -1,4 +1,5 @@
 import logging
+import os
 import requests
 import zipfile
 
@@ -9,6 +10,7 @@ import numpy as np
 
 from airflow.models import Variable
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 DATASET_LOCATION='https://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
 DATASET_HASH_LOCATION='https://files.grouplens.org/datasets/movielens/ml-latest-small.zip.md5'
@@ -29,7 +31,7 @@ def __get_current_run_hash(ti):
     return ti.xcom_pull(key='hash_id',task_ids="data_is_new")  
 
 def __get_s3_hook():
-    return S3Hook('recsys_s3_connection')
+    return S3Hook('recsys_s3')
     
 def _data_is_new(ti, xcom_push=False, **kwargs):
     """
@@ -62,36 +64,41 @@ def _update_hash_variable(ti,**kwargs):
                               task_ids="data_is_new") )
     
 
-def __download_and_unpack_dataset(dataset):
+def __download_and_unpack_dataset(source):
 
-    r = requests.get(dataset)
+    r = requests.get(source)
     r.raise_for_status()
-
-    with open(local_dst_f,"wb") as f:
-        f.write(r.content)
-
-    logging.info(f"External data downloaded to {local_dst_f}")
-
-    with zipfile.ZipFile(local_dst_f,'r') as z:
-        z.extractall(Path.home())
-        loging.info(f"Following files unzipped {z.namelist()}")
-
-    # # If its one of the two files we need          
-    # for f in z.namelist():
-    #     if Path(f).name in ['ratings.csv', 'movies.csv']:    
+    logging.info(f"successfully downloaded content from {source}")
     
+    zip_dst = Path.home() / Path(source).name
+    return_paths = []
+    with open(zip_dst,"wb") as f:
+        f.write(r.content)
+    logging.info(f"External data downloaded to {zip_dst}")
 
-    pass
+    with zipfile.ZipFile(zip_dst,'r') as z:
+        unzip_dst = Path.home() 
+        z.extractall(unzip_dst)
+        unzip_directory = Path(source).stem
+        logging.info(f"Following files unzipped {z.namelist()}")
+
+        # rebuild the absolute path to the files we need to process
+        for f in z.namelist():
+            if Path(f).name in ['ratings.csv', 'movies.csv']:
+                abs_p = Path.home() / Path(f)
+                return_paths.append(abs_p)
+
+    logging.info(f"{return_paths} fetched and unpacked ") 
+    return return_paths
 
 def _fetch_dataset(ti, **kwargs):
     """
     Downloads the data from the movielens repository and re uploads it to an 
     s3 bucket for future use. 
     """
+    
     # Get the source from a variable and generate a local location for the download
     source = Variable.get("DATASET_LOCATION", default_var = DATASET_LOCATION)
-    local_dst_f = Path.home() / Path(source).name
-    
 
     files_to_upload = __download_and_unpack_dataset(source)
     
@@ -99,8 +106,16 @@ def _fetch_dataset(ti, **kwargs):
         s3 = __get_s3_hook()
         bucket = __get_recsys_bucket()  
         hash_id = __get_current_run_hash(ti)
-        s3_dst = f"{hash_id}/{f}"
-
+        s3_dst = f"{hash_id}/{Path(f).name}"
+        
+        
+        # we do this because trying to create the same bucket twice will cause a failure. We 
+        # prefer to silently pass all errors and catch issues at the load method. 
+        try :
+            s3.create_bucket(bucket_name = bucket)
+        except: 
+            pass
+            
         s3.load_file(
             filename=f,
             key=s3_dst,
@@ -173,9 +188,10 @@ def _generate_data_frames(ti, **kwargs):
     s3 = __get_s3_hook()
     bucket = __get_recsys_bucket()
     ratings_object = ti.xcom_pull(key="ratings.csv",
-                                  stask_ids="fetch_datasets")
+                                  task_ids="fetch_dataset")
+    logging.info(ratings_object)
     movies_object = ti.xcom_pull(key="movies.csv",
-                                 task_ids="fetch_datasets")
+                                 task_ids="fetch_dataset")
     
     ratings_csv = s3.download_file(
         key = ratings_object,
@@ -203,14 +219,15 @@ def _generate_data_frames(ti, **kwargs):
 
         ti.xcom_push(key=Path(f).name,
                      value=s3_dst)
-        ti.xcom_push(key=f"{path(f).name}.vector_length",
-                     value = shape[1])
+        ti.xcom_push(key=f"{Path(f).name}.vector_length",
+                     value = shape[1]-1)
 
 
 def _load_movie_vectors(ti, pg_connection_id):
     s3 = __get_s3_hook()
     bucket = __get_recsys_bucket()
     hash_id = __get_current_run_hash(ti)
+    vector_length = ti.xcom_pull(key='movie_watcher_df.parquet.vector_length', task_ids='generate_data_frames')
     
     movies_ratings_object = f"{hash_id}/movie_watcher_df.parquet"
 
@@ -220,17 +237,25 @@ def _load_movie_vectors(ti, pg_connection_id):
     )
 
     # esablish postgres connection
-    pg_hook = PostgresHook(postgres_conn_id='postgres_default')
-    insert_cmd = f"""
-                INSERT INTO {hash_id} (movieId, vector)
-                VALUES(%s, %s);
-                """
-    movie_ratings_df = pl.read_parquet(movie_ratings_file)
-    # loop through items in doc
-    for r in movie_ratings_df.rows():
-        row = (r[0], f"'{list(r[1:])}'")
-        # insert item to table
-        pg_hook.run(insert_cmd, parameters=row)
+    pg_hook = PostgresHook(postgres_conn_id='recsys_pg_vector_backend')
+
+    # drop and re create the table (we do this to manage restarts)
+    pg_hook.run(f'DROP TABLE IF EXISTS "{hash_id}";')
+
+    pg_hook.run(f'''CREATE TABLE IF NOT EXISTS "{hash_id}" (          
+                    movieId INTEGER PRIMARY KEY,
+                    vector VECTOR("{vector_length}")
+                );''')
+        
+    # we use this generator in a second
+    def row_generator(df):
+        for r in movie_ratings_df.rows():
+            yield (r[0], f"{list(r[1:])}")
+
+    movie_ratings_df = pl.read_parquet(movie_ratings_file)    
+
+    #bulk upload
+    pg_hook.insert_rows(table=f'"{hash_id}"', rows=(r for r in row_generator(movie_ratings_df)), target_fields=['movieId','vector'])
     pass
 
 
