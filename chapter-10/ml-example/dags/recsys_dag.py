@@ -2,13 +2,19 @@
 from datetime import datetime
 
 
+
 from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
-from recsys_dag import _data_is_new, _fetch_dataset, _generate_data_frames, _create_knn_vector_table, _swap_knn_vector_table, _swap_knn_vector_table, _upload_model_artifact
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+
+from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors
 
 
 
 from airflow import DAG
+
+
+PG_VECTOR_BACKEND = 'recsys_pg_vector_backend'
 
 
 with DAG(
@@ -36,10 +42,28 @@ with DAG(
         python_callable = _generate_data_frames
     )
 
-    create_knn_vector_table = PythonOperator(
-
+    enable_vector_plugin = PostgresOperator(
+        task_id="enable_vector_extension",
+        postgres_conn_id=PG_VECTOR_BACKEND,
+        sql="CREATE EXTENSION IF NOT EXISTS vector;",
+    )
+    
+    create_movie_vector_table = PostgresOperator(
+        task_id='create_knn_movie_vector_table',        
+        sql=f'''CREATE TABLE IF NOT EXISTS '{{ key='hash_id', task_ids="data_is_new" }}' (          
+                movieId INTEGER PRIMARY KEY,
+                vector VECTOR('{{ key='movie_watcher_df.parquet.vector_length', task_ids="generate_data_frames" }}'))
+        );
+        '''
     )
 
+    load_movie_vectors = PythonOperator(
+        task_id="load_movie_vectors",
+        python_callable = _load_movie_vectors,
+        op_kwargs={'pg_connection_id': PG_VECTOR_BACKEND},
+    )
+    
+    
     train_deep_learning_model = PythonOperator(
 
     )
@@ -48,19 +72,22 @@ with DAG(
         task_id="join_no_op"
     )
 
-    swap_knn_vector_table = PythonOperator(
-
+    swap_knn_vector_table = PostgresOperator(
+        task_id='create_knn_movie_vector_table',        
+        sql=f'''ALTER TABLE '{{ key='hash_id', task_ids="data_is_new" }}'        
+                RENAME TO production_table ;
+        '''
     )
 
-    upload_model_artifact = PythonOperator{
+    upload_model_artifact = PythonOperator()
 
-    }
+    
 
 data_is_new >> do_nothing
-data_is_new >> fetch_dataset >> generate_data_sets
+data_is_new >> fetch_dataset >> generate_data_frames
 
-generate_data_sets >> create_knn_vector_table >> join_no_op
-generate_data_sets >> train_deep_learning_model >> join_no_op
+generate_data_frames >> create_knn_vector_table >> join_no_op
+generate_data_frames >> train_deep_learning_model >> join_no_op
 
 join_no_op >> swap_knn_vector_table
 join_no_op >> upload_model_artifact
