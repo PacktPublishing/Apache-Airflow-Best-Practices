@@ -36,7 +36,7 @@ def _data_is_new(ti, xcom_push=False, **kwargs):
         if internal_md5 != external_md5 :
             ti.xcom_push(key='hash_id',
                          value=external_md5)
-            return 'download_dataset'
+            return 'fetch_dataset'
 
     return 'do_nothing'
                 
@@ -57,7 +57,7 @@ def _fetch_dataset(ti, **kwargs):
     s3 bucket for future use. 
     """
     # Get the source from a variable and generate a local location for the download
-    source = Variable.get("DATASET_LOCATION")
+    source = Variable.get("DATASET_LOCATION", default_vars = DATASET_LOCATION)
     local_dst_f = Path.home() / Path(source).name
     
     # Download our zip file from movie lens
