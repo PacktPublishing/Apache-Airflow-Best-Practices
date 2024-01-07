@@ -1,5 +1,5 @@
 version: '3'
-name: airflow_name
+name: airflow_recsys
 # ====================================== AIRFLOW ENVIRONMENT VARIABLES =======================================
 x-airflow-common:
   &airflow-common
@@ -33,20 +33,20 @@ services:
     image: minio/minio:latest
     command: minio server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: "airflow"
-      MINIO_ROOT_PASSWORD: "airflow"
-    ports:
-      - 9000:9000
-      - 9001:9001
+      MINIO_ROOT_USER: "airflow123"
+      MINIO_ROOT_PASSWORD: "airflow123"
     volumes:
       - ./data:/data
+    expose:
+      - 9090
+      - 9091
   pgvector:
     image: ankane/pgvector
     volumes:
       - ${PWD}/include/postgres:/var/lib/postgresql/data
       - ${PWD}/include:/include
-    ports:
-      - 5433:5432
+    expose:
+      - 5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
