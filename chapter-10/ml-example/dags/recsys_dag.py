@@ -4,7 +4,7 @@ from datetime import datetime
 
 from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
-from example_dag import _data_is_new, _fetch_dataset, _unzip_assets, _generate_data_sets, _create_knn_vector_table, _swap_knn_vector_table, _swap_knn_vector_table, _upload_model_artifact
+from recsys_dag import _data_is_new, _fetch_dataset, _generate_data_frames, _create_knn_vector_table, _swap_knn_vector_table, _swap_knn_vector_table, _upload_model_artifact
 
 
 
@@ -26,13 +26,14 @@ with DAG(
     )
 
     fetch_dataset = PythonOperator(
-
+        task_id = "fetch_dataset",
+        python_callable = _fetch_dataset
     )
 
 
-
-    generate_data_sets = PythonOperator(
-
+    generate_data_frames = PythonOperator(
+        task_id = "generate_data_frames",
+        python_callable = _generate_data_frames
     )
 
     create_knn_vector_table = PythonOperator(
