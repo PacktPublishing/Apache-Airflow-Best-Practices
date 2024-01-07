@@ -58,13 +58,12 @@ def _data_is_new(ti, xcom_push=False, **kwargs):
     return 'do_nothing'
                 
 
-def _update_hash_variable(ti,**kwargs):
+def _update_internal_hash(ti,**kwargs):
     """
     updates the INTERNAL_MD5 variable instance to the current runs md5 hash
     """
-    Variable.set("INTERNAL_MD5",
-                 ti.xcom_pull(key='hash_id',
-                              task_ids="data_is_new") )
+    Variable.set("INTERNAL_MD5", __get_current_run_hash(ti))
+    return
     
 
 def __download_and_unpack_dataset(source):

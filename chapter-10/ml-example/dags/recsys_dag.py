@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
-from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors
+from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors, _update_internal_hash
 
 
 
@@ -60,14 +60,14 @@ with DAG(
     )
     
 
-    join_no_op = EmptyOperator(
-        task_id="join_no_op"
-    )
-
     create_temp_table = PostgresOperator(
         task_id='create_temp_table',
         postgres_conn_id = PG_VECTOR_BACKEND,        
         sql= 'CREATE TABLE "temp" AS TABLE "' + "{{ ti.xcom_pull(key='hash_id', task_ids='data_is_new') }}" + '";'
+    )
+
+    join_no_op = EmptyOperator(
+        task_id="join_no_op"
     )
 
     swap_prod_table = PostgresOperator(
@@ -78,15 +78,20 @@ with DAG(
 
 
 
+    update_internal_hash = PythonOperator(
+        task_id = 'update_internal_hash',
+        python_callable = _update_internal_hash
+    )
 
     
 
 data_is_new >> do_nothing
 data_is_new >> fetch_dataset >> generate_data_frames
 
-generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> join_no_op
+generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> create_temp_table >> join_no_op
 # generate_data_frames >> train_deep_learning_model >> join_no_op
 
-join_no_op >> create_temp_table >> swap_prod_table
+join_no_op >> swap_prod_table
 # join_no_op >> upload_model_artifact
 
+swap_prod_table >> update_internal_hash
