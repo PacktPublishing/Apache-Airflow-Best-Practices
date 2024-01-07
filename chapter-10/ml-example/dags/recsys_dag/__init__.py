@@ -15,6 +15,22 @@ DATASET_HASH_LOCATION='https://files.grouplens.org/datasets/movielens/ml-latest-
 
 
 
+def __get_external_hash(url):
+    r = requests.get(url) 
+    r.raise_for_status()
+    return r.content.decode() \
+                    .rstrip() \
+                    .split(' = ')[1]
+
+def __get_recsys_bucket():
+    return Variable.get("RECSYS_S3_BUCKET",default_var = "recsys") 
+
+def __get_current_run_hash(ti):
+    return ti.xcom_pull(key='hash_id',task_ids="data_is_new")  
+
+def __get_s3_hook():
+    return S3Hook('recsys_s3_connection')
+    
 def _data_is_new(ti, xcom_push=False, **kwargs):
     """
     Determine if the external hash of the movielens website are different from the last set we processed.
@@ -27,16 +43,12 @@ def _data_is_new(ti, xcom_push=False, **kwargs):
     dataset_hash_location = Variable.get("DATASET_HASH_LOCATION", default_var=DATASET_HASH_LOCATION)
     internal_md5 = Variable.get("INTERNAL_MD5", default_var=None)
 
-    r = requests.get(dataset_hash_location)
-    if r.ok:
-        external_md5 = r.content.decode() \
-                        .rstrip() \
-                        .split(' = ')[1]
-
-        if internal_md5 != external_md5 :
-            ti.xcom_push(key='hash_id',
-                         value=external_md5)
-            return 'fetch_dataset'
+    external_md5 = __get_external_hash(dataset_hash_location)
+    
+    if internal_md5 != external_md5 :
+        ti.xcom_push(key='hash_id',
+                     value=external_md5)
+        return 'fetch_dataset'
 
     return 'do_nothing'
                 
@@ -50,6 +62,26 @@ def _update_hash_variable(ti,**kwargs):
                               task_ids="data_is_new") )
     
 
+def __download_and_unpack_dataset(dataset):
+
+    r = requests.get(dataset)
+    r.raise_for_status()
+
+    with open(local_dst_f,"wb") as f:
+        f.write(r.content)
+
+    logging.info(f"External data downloaded to {local_dst_f}")
+
+    with zipfile.ZipFile(local_dst_f,'r') as z:
+        z.extractall(Path.home())
+        loging.info(f"Following files unzipped {z.namelist()}")
+
+    # # If its one of the two files we need          
+    # for f in z.namelist():
+    #     if Path(f).name in ['ratings.csv', 'movies.csv']:    
+    
+
+    pass
 
 def _fetch_dataset(ti, **kwargs):
     """
@@ -57,41 +89,33 @@ def _fetch_dataset(ti, **kwargs):
     s3 bucket for future use. 
     """
     # Get the source from a variable and generate a local location for the download
-    source = Variable.get("DATASET_LOCATION", default_vars = DATASET_LOCATION)
+    source = Variable.get("DATASET_LOCATION", default_var = DATASET_LOCATION)
     local_dst_f = Path.home() / Path(source).name
     
-    # Download our zip file from movie lens
-    r = requests.get(source)
-    if r.ok:
-        with open(local_dst_f,"wb") as f:
-            f.write(r.content)
 
-        # Extract the zip file 
-        with zipfile.ZipFile(local_dst_f,'r') as z:
-            z.extractall(Path.home())
+    files_to_upload = __download_and_unpack_dataset(source)
+    
+    for f in files_to_upload:
+        s3 = __get_s3_hook()
+        bucket = __get_recsys_bucket()  
+        hash_id = __get_current_run_hash(ti)
+        s3_dst = f"{hash_id}/{f}"
 
-            # If its one of the two files we need
-            
-            for f in z.namelist():
-                if Path(f).name in ['ratings.csv', 'movies.csv']:    
-                    #Upload it to s3 at /<hash_id>/file_name.csv
-                    s3 = S3Hook('recsys_s3_connection')
-                    bucket = Variable.get("RECSYS_S3_BUCKET")        
-                    hash_id = ti.xcom_pull(key='hash_id',
-                                           task_ids="data_is_new")
-                    s3_dst = f"{hash_id}/{f}"
+        s3.load_file(
+            filename=f,
+            key=s3_dst,
+            bucket_name= bucket,
+            replace=True
+        )
 
-                    s3.load_file(
-                        filename=f,
-                        key=s3_dst,
-                        bucket_name= bucket,
-                        replace=True
-                    )
+        ti.xcom_push(key=Path(f).name,
+                        value=s3_dst)
+    
+    
+    
+        
+                
 
-                    ti.xcom_push(key=Path(f).name,
-                                 value=s3_dst)
-    else:
-        raise ValueError(f"Download request failed with {r.status_code}")
 
 
 def _process_csv(ratings_csv, movies_csv):
@@ -146,8 +170,8 @@ def _generate_data_frames(ti, **kwargs):
     stores them back to an S3 bucket as objects. 
     """
 
-    s3 = S3Hook('recsys_s3_connection')
-    bucket = Variable.get("RECSYS_S3_BUCKET")        
+    s3 = __get_s3_hook()
+    bucket = __get_recsys_bucket()
     ratings_object = ti.xcom_pull(key="ratings.csv",
                                   stask_ids="fetch_datasets")
     movies_object = ti.xcom_pull(key="movies.csv",
@@ -166,8 +190,6 @@ def _generate_data_frames(ti, **kwargs):
     files_to_upload = _process_csv(ratings_csv=ratings_csv, movies_csv=movies_csv)
 
     for f, shape in files_to_upload:
-        s3 = S3Hook('recsys_s3_connection')
-        bucket = Variable.get("RECSYS_S3_BUCKET")        
         hash_id = ti.xcom_pull(key='hash_id',
                                 task_ids="data_is_new")
         s3_dst = f"{hash_id}/{Path(f).name}"
@@ -185,11 +207,10 @@ def _generate_data_frames(ti, **kwargs):
                      value = shape[1])
 
 
-def _load_movie_vectors(pg_connection_id):
-    s3 = S3Hook('recsys_s3_connection')
-    bucket = Variable.get("RECSYS_S3_BUCKET")        
-    hash_id = ti.xcom_pull(key='hash_id',
-                            task_ids="data_is_new")
+def _load_movie_vectors(ti, pg_connection_id):
+    s3 = __get_s3_hook()
+    bucket = __get_recsys_bucket()
+    hash_id = __get_current_run_hash(ti)
     
     movies_ratings_object = f"{hash_id}/movie_watcher_df.parquet"
 
