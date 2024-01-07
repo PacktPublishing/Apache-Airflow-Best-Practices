@@ -32,6 +32,9 @@ def __get_current_run_hash(ti):
 
 def __get_s3_hook():
     return S3Hook('recsys_s3')
+
+def __get_pgvector_hook():
+    return PostgresHook(postgres_conn_id='recsys_pg_vector_backend')
     
 def _data_is_new(ti, xcom_push=False, **kwargs):
     """
@@ -223,7 +226,7 @@ def _generate_data_frames(ti, **kwargs):
                      value = shape[1]-1)
 
 
-def _load_movie_vectors(ti, pg_connection_id):
+def _load_movie_vectors(ti):
     s3 = __get_s3_hook()
     bucket = __get_recsys_bucket()
     hash_id = __get_current_run_hash(ti)
@@ -237,7 +240,7 @@ def _load_movie_vectors(ti, pg_connection_id):
     )
 
     # esablish postgres connection
-    pg_hook = PostgresHook(postgres_conn_id='recsys_pg_vector_backend')
+    pg_hook = __get_pgvector_hook()
 
     # drop and re create the table (we do this to manage restarts)
     pg_hook.run(f'DROP TABLE IF EXISTS "{hash_id}";')
@@ -247,7 +250,7 @@ def _load_movie_vectors(ti, pg_connection_id):
                     vector VECTOR("{vector_length}")
                 );''')
         
-    # we use this generator in a second
+    
     def row_generator(df):
         for r in movie_ratings_df.rows():
             yield (r[0], f"{list(r[1:])}")
@@ -259,9 +262,7 @@ def _load_movie_vectors(ti, pg_connection_id):
     pass
 
 
-def _swap_knn_vector_table():
-    pass
 
+    
 
-def _upload_model_artifact():
-    pass
+                

@@ -59,23 +59,25 @@ with DAG(
         op_kwargs={'pg_connection_id': PG_VECTOR_BACKEND},
     )
     
-    
-    # train_deep_learning_model = PythonOperator(
-
-    # )
 
     join_no_op = EmptyOperator(
         task_id="join_no_op"
     )
 
-    swap_knn_vector_table = PostgresOperator(
-        task_id='promote_movie_vector_table',        
-        sql=f'''ALTER TABLE '{{ key='hash_id', task_ids="data_is_new" }}'        
-                RENAME TO production_table ;
-        '''
+    create_temp_table = PostgresOperator(
+        task_id='create_temp_table',
+        postgres_conn_id = PG_VECTOR_BACKEND,        
+        sql= 'CREATE TABLE "temp" AS TABLE "' + "{{ ti.xcom_pull(key='hash_id', task_ids='data_is_new') }}" + '";'
     )
 
-    # upload_model_artifact = PythonOperator()
+    swap_prod_table = PostgresOperator(
+        task_id='swap_temp_to_prod',
+        postgres_conn_id = PG_VECTOR_BACKEND,        
+        sql= 'DROP TABLE IF EXISTS "movie_vectors"; ALTER TABLE "temp" RENAME TO "movie_vectors";'
+    )
+
+
+
 
     
 
@@ -85,6 +87,6 @@ data_is_new >> fetch_dataset >> generate_data_frames
 generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> join_no_op
 # generate_data_frames >> train_deep_learning_model >> join_no_op
 
-join_no_op >> swap_knn_vector_table
+join_no_op >> create_temp_table >> swap_prod_table
 # join_no_op >> upload_model_artifact
 
