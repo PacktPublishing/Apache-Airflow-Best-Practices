@@ -1,5 +1,2 @@
 numpy
 polars 
-keras 
-tensorflow
-scikit-learn

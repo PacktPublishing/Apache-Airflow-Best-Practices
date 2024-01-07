@@ -2,7 +2,7 @@
 from datetime import datetime
 
 
-
+from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
@@ -77,6 +77,19 @@ with DAG(
     )
 
 
+    # train_DL_model = KubernetesPodOperator(
+
+    # )
+
+    train_DL_model = DockerOperator(
+        task_id='train_dl_model',
+        image='model_trainer',
+        container_name="{{ ti.xcom_pull(key='hash_id',task_ids='data_is_new')}}"+"_model_trainer",
+        api_version='auto',
+        auto_remove=True,
+        docker_url="unix://var/run/docker.sock",
+        network_mode="bridge"
+        )
 
     update_internal_hash = PythonOperator(
         task_id = 'update_internal_hash',
@@ -89,7 +102,7 @@ data_is_new >> do_nothing
 data_is_new >> fetch_dataset >> generate_data_frames
 
 generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> create_temp_table >> join_no_op
-# generate_data_frames >> train_deep_learning_model >> join_no_op
+generate_data_frames >> train_DL_model >> join_no_op
 
 join_no_op >> swap_prod_table
 # join_no_op >> upload_model_artifact

@@ -28,9 +28,17 @@ x-airflow-common:
   volumes:
     - ../dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
+    - /var/run/docker.sock:/var/run/docker.sock # We will pass the Docker Deamon as a volume to allow the webserver containers start docker images. Ref: https://stackoverflow.com/q/51342810/7024760
+
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 
 services:
+  model_trainer:
+    image: model_trainer
+    build:
+      context: ..
+      dockerfile: dags/recsys_dag/model_trainer.Dockerfile
+    command: /bin/true
   minio:
     image: minio/minio:latest
     command: minio server /data --console-address ":9001"
