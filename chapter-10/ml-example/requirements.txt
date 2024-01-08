@@ -1,2 +1,3 @@
 numpy
-polars 
+polars
+apache-airflow-providers-cncf-kubernetes

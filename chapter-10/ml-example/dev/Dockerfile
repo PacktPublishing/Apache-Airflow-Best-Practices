@@ -11,7 +11,9 @@ RUN if [[ -s packages.txt ]]; then \
     apt-get update && cat packages.txt | tr '\r\n' '\n' | xargs apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*; \
-  fi
+  fi; \
+  mkdir -p /usr/local/airflow/include/.kube/
+
 
 ## install python requirements
 # Install python packages
@@ -21,6 +23,5 @@ RUN if grep -Eqx 'apache-airflow\s*[=~>]{1,2}.*' requirements.txt; then \
     echo >&2 "Set Apache Airflow version via the Dockerfile, not requirements!";  exit 1; \
   fi; \
   pip install --no-cache-dir -q -r requirements.txt
-
 
 COPY --chown=airflow:airflow . .
