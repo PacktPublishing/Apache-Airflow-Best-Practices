@@ -1,6 +1,0 @@
--r requirements.txt
-pytest
-pytest-cov
-apache-airflow
-pre-commit
-jupyterlab

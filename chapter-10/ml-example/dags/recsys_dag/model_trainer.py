@@ -91,9 +91,11 @@ def main():
 
     model.fit(x = X_train_array, y = y_train, batch_size=4096, epochs=70, verbose=1, validation_data=(X_test_array, y_test),shuffle=True,callbacks=[reduce_lr])
 
+    #Save locally
     local_model = Path.home() / "model.keras"
     model.save(local_model)
 
+    #Upload to the remote bucket
     model_destination = f"{run_hash}/model.keras"
     s3.Bucket(bucket_name).upload_file(local_model, model_destination)
 
