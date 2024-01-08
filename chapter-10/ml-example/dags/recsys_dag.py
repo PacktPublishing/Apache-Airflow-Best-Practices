@@ -87,8 +87,12 @@ with DAG(
         container_name="{{ ti.xcom_pull(key='hash_id',task_ids='data_is_new')}}"+"_model_trainer",
         api_version='auto',
         auto_remove=True,
-        docker_url="unix://var/run/docker.sock",
-        network_mode="bridge"
+        environment = {
+            'RUN_HASH' : "{{ ti.xcom_pull(key='hash_id',task_ids='data_is_new')}}",
+            'RECSYS_DATA_SET_KEY' : "{{ ti.xcom_pull(key='ratings.csv',task_ids='fetch_dataset')}}"
+        },
+        docker_url="tcp://docker-socket-proxy:2375",
+        network_mode="airflow_recsys_default"
         )
 
     update_internal_hash = PythonOperator(
