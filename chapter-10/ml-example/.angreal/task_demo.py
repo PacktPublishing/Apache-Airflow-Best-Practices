@@ -13,7 +13,9 @@ demo = angreal.command_group(name="demo", about="commands for controlling the de
 @angreal.command(name="start", about="start services for example dags")
 def demo_start():
     subprocess.run(
-        	(f"docker-compose -f {docker_compose} build --no-cache && docker-compose -f {docker_compose} up -d"),
+
+        	(f"docker-compose -f {docker_compose} build && docker-compose -f {docker_compose} up -d"),
+
             shell=True,
             cwd=cwd
     )

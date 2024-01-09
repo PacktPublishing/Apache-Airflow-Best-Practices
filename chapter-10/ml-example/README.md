@@ -40,3 +40,8 @@ be running against. For demo purposes the following instructions work with Docke
 
 > THIS IS NOT A SECURE METHOD OF CONFIGURING OR GETTING A KUBECONFIG FILE INTO YOUR AIRFLOW INSTANCE, PLEASE USE ALTERNATIVE METHODS OF MOUNTING THIS INFORMATION IN PRODUCTION SCENARIOS.
 
+
+We utilize minio as a substitute for S3 object storage to hopefully make everyones life a little easier. Because this is running in the docker-compose stack, when we're running a KPO within the local cluster - we have to do some additional work to resolve locally.
+
+First, we bind port 9000 in our docker-compose file to the localhost. Next within the model training script,  we utilize the special DNS 
+`http://host.docker.internal:9000` to resolve our minio instance bound to local host.
