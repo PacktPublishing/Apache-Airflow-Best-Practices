@@ -47,6 +47,7 @@ def _data_is_new(ti, xcom_push=False, **kwargs):
         str: the next task to execute
     """
     dataset_hash_location = __get_last_successful_hash()
+
     internal_md5 = Variable.get("INTERNAL_MD5", default_var=None)
 
     external_md5 = __get_external_hash(dataset_hash_location)
@@ -254,6 +255,7 @@ def _load_movie_vectors(ti):
     #bulk upload
     pg_hook.insert_rows(table=f'"{hash_id}"', rows=(r for r in row_generator(movie_ratings_df)), target_fields=['movieId','vector'])
     pass
+
 
 
 def _promotion_failure_rollback(context):

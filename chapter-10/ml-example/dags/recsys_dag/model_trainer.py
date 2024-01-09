@@ -14,6 +14,7 @@ data_set_key = os.environ.get('RECSYS_DATA_SET_KEY',None)
 bucket_name = os.environ.get('RECSYS_BUCKET_NAME', 'recsys')
 
 endpoint_url = os.environ.get('S3_ENDPOINT', "http://host.docker.internal:9000")
+
 aws_access_key_id = os.environ.get("AWS_ACCESS_KEY", 'airflow123')
 aws_secret_access_key = os.environ.get("AWS_SECRET_KEY", 'airflow123')
 

@@ -8,6 +8,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+
 from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors, _update_internal_hash, __get_recsys_bucket, _promotion_failure_rollback
 
 
@@ -24,8 +25,10 @@ S3_HOOK_CONNECTION = 'minio_connection'
 # 1. Install Docker Desktop, and under settings enable kubernetes
 # 2. Get your kubernetes config file via `kubectl config view --minify --raw `
 # 3. Update the server section from `https://127.0.0.1:6443` to `https://kubernetes.docker.internal:6443`
+
 with open('/usr/local/airflow/include/.kube/config', 'w') as f:
    f.write(""" """)
+
 
 
 with DAG(
@@ -137,8 +140,10 @@ with DAG(
 data_is_new >> do_nothing
 data_is_new >> fetch_dataset >> generate_data_frames
 
+
 generate_data_frames >> enable_vector_extension >>  load_movie_vectors >> create_temp_table >> join_no_op 
 generate_data_frames >> train_DL_model >> join_no_op
 
 join_no_op >> swap_prod_table >> update_internal_hash
 join_no_op >> promote_model >> update_internal_hash
+

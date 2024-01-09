@@ -62,6 +62,7 @@ services:
       - 9091
     ports:
       - "9000:9000"
+
   pgvector:
     image: ankane/pgvector
     expose:
