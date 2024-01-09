@@ -8,7 +8,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
-from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors, _update_internal_hash, __get_recsys_bucket
+from recsys_dag import  _data_is_new, _fetch_dataset, _generate_data_frames, _load_movie_vectors, _update_internal_hash, __get_recsys_bucket, _promotion_failure_rollback
 
 
 
@@ -117,6 +117,7 @@ with DAG(
         },
         cluster_context="docker-desktop",  # is ignored when in_cluster is set to True
         config_file='/usr/local/airflow/include/.kube/config',
+        on_failure_callback = _promotion_failure_rollback
     )
 
     # train_DL_model = DockerOperator(
@@ -130,7 +131,8 @@ with DAG(
     #         'RECSYS_DATA_SET_KEY' : "{{ ti.xcom_pull(key='ratings.csv',task_ids='fetch_dataset')}}"
     #         },
     #     docker_url="tcp://docker-socket-proxy:2375",
-    #     network_mode="airflow_recsys_default"
+    #     network_mode="airflow_recsys_default",
+    #     on_failure_callback = _promotion_failure_rollback
     #     )
     	
 
@@ -138,14 +140,16 @@ with DAG(
         task_id = "promote_dl_model",
         aws_conn_id = 'recsys_s3' ,
         source_bucket_key = "{{ ti.xcom_pull(key='return_value',task_ids='train_dl_model')}}" ,
-        dest_bucket_key = "latest_model",
+        dest_bucket_key = "latest_model.keras",
         source_bucket_name = __get_recsys_bucket(),
         dest_bucket_name = __get_recsys_bucket(),
+        on_failure_callback = _promotion_failure_rollback
     )
 
     update_internal_hash = PythonOperator(
         task_id = 'update_internal_hash',
-        python_callable = _update_internal_hash
+        python_callable = _update_internal_hash,
+        on_failure_callback = _promotion_failure_rollback
     )
 
 

@@ -34,6 +34,9 @@ def __get_s3_hook():
 def __get_pgvector_hook():
     return PostgresHook(postgres_conn_id='recsys_pg_vector_backend')
 
+def __get_last_successful_hash():
+    return Variable.get("DATASET_HASH_LOCATION", default_var=DATASET_HASH_LOCATION)
+
 def _data_is_new(ti, xcom_push=False, **kwargs):
     """
     Determine if the external hash of the movielens website are different from the last set we processed.
@@ -43,7 +46,7 @@ def _data_is_new(ti, xcom_push=False, **kwargs):
     Returns:
         str: the next task to execute
     """
-    dataset_hash_location = Variable.get("DATASET_HASH_LOCATION", default_var=DATASET_HASH_LOCATION)
+    dataset_hash_location = __get_last_successful_hash()
     internal_md5 = Variable.get("INTERNAL_MD5", default_var=None)
 
     external_md5 = __get_external_hash(dataset_hash_location)
@@ -251,3 +254,19 @@ def _load_movie_vectors(ti):
     #bulk upload
     pg_hook.insert_rows(table=f'"{hash_id}"', rows=(r for r in row_generator(movie_ratings_df)), target_fields=['movieId','vector'])
     pass
+
+
+def _promotion_failure_rollback(context):
+    """In the event of a failure during promotion, we roll back all assets to the last successful hash.
+    """
+    ti = context['task_instance']
+    run_hash = __get_last_successful_hash()
+
+    s3 = __get_s3_hook()
+    bucket = __get_recsys_bucket()
+
+    pg_hook = __get_pgvector_hook()
+    pg_hook.run(f"DROP TABLE IF EXISTS 'movie_vectors'; CREATE TABLE 'movie_vectors' AS TABLE '{run_hash}';")
+
+    s3.copy_object(f"{run_hash}/model.keras", "latest_model.keras", bucket, bucket)
+    
