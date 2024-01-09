@@ -127,12 +127,6 @@ def _fetch_dataset(ti, **kwargs):
                         value=s3_dst)
 
 
-
-
-
-
-
-
 def _process_csv(ratings_csv, movies_csv):
     """
     takes two csv files, turns them into parquet files and puts them to disk.

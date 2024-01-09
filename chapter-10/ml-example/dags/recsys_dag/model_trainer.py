@@ -12,7 +12,7 @@ run_hash = os.environ.get('RUN_HASH',None)
 data_set_key = os.environ.get('RECSYS_DATA_SET_KEY',None)
 
 bucket_name = os.environ.get('RECSYS_BUCKET_NAME', 'recsys')
-endpoint_url = os.environ.get('S3_ENDPOINT', 'http://minio:9000')
+endpoint_url = os.environ.get('S3_ENDPOINT', "http://host.docker.internal:9000" if os.environ.get('KUBERNETES_SERVICE_HOST',None) else 'http://minio:9000' )
 aws_access_key_id = os.environ.get("AWS_ACCESS_KEY", 'airflow123')
 aws_secret_access_key = os.environ.get("AWS_SECRET_KEY", 'airflow123')
 
@@ -99,8 +99,14 @@ def main():
     model_destination = f"{run_hash}/model.keras"
     s3.Bucket(bucket_name).upload_file(local_model, model_destination)
 
+    #KPO XCOM
+    with open("/airflow/xcom/return.json", "w") as f:
+        f.write(f'"{model_destination}"')
 
+    #DockerOperator XCOM
+    print(f"{model_destination}")
 
+    
 
 if __name__ == '__main__':
     main()
