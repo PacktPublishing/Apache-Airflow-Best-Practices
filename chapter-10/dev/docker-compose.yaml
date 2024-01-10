@@ -29,6 +29,10 @@ x-airflow-common:
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 
 services:
+  job_loader:
+    build:
+      context: cron-job
+      dockerfile: Dockerfile
   postgres:
     image: postgres:15-alpine
     environment:
