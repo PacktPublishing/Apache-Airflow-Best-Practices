@@ -7,7 +7,7 @@ x-airflow-common:
     context: ..
     dockerfile: dev/Dockerfile
     args:
-      IMAGE_NAME: "${IMAGE_NAME:-apache/airflow:2.5.0}"
+      IMAGE_NAME: "airflow:2.7.0
   user: "${AIRFLOW_UID}:0"
   environment:
     &airflow-common-env
@@ -24,7 +24,7 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__STATSD_PORT: 9125
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
   volumes:
-    - ../example_dags:/opt/airflow/dags
+    - ../dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 

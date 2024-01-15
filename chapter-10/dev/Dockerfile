@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-ARG IMAGE_NAME="apache/airflow:2.5.0"
+ARG IMAGE_NAME="apache/airflow:2.7.0"
 FROM ${IMAGE_NAME}
 
 
