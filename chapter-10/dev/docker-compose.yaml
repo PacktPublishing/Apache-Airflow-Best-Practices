@@ -7,7 +7,7 @@ x-airflow-common:
     context: ..
     dockerfile: dev/Dockerfile
     args:
-      IMAGE_NAME: "airflow:2.7.0
+      IMAGE_NAME: "apache/airflow:2.7.0"
   user: "${AIRFLOW_UID}:0"
   environment:
     &airflow-common-env
@@ -23,16 +23,25 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__STATSD_ON: True
     AIRFLOW__SCHEDULER__STATSD_PORT: 9125
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW_CONN_TEST_CASES_BACKEND: '{"conn_type": "postgres", "host": "test_cases", "login": "test", "password": "test", "port": "5432"}'
   volumes:
     - ../dags:/opt/airflow/dags
     - logs:/opt/airflow/logs
 # ====================================== /AIRFLOW ENVIRONMENT VARIABLES ======================================
 
 services:
-  job_loader:
-    build:
-      context: cron-job
-      dockerfile: Dockerfile
+  test_cases:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=test
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "test"]
+      interval: 5s
+      retries: 60
+    restart: always
   postgres:
     image: postgres:15-alpine
     environment:
