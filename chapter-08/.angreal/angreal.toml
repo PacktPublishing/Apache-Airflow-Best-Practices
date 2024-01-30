@@ -1,0 +1,2 @@
+airflow_name = "airflow-dev"
+airflow_version = "2.8.1"
