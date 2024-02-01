@@ -1,0 +1,131 @@
+{# Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements. See the NOTICE file distributed with this work
+for additional information regarding copyright ownership. The ASF licenses this
+file to you under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by
+applicable law or agreed to in writing, software distributed under the License
+is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License. #}
+{% extends base_template %}
+
+{% block title %}
+{{ title }}
+{% endblock %}
+
+{% block head_meta %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6 col-md-12">
+      <canvas id="successChart"></canvas>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+      <canvas id="failedChart"></canvas>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block tail %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const data = {{ dag_run_stats | tojson }};
+  new Chart(
+    document.getElementById('successChart'),
+    {
+      type: 'bar',
+      title: "Successful Dag Runs",
+      data: {
+        labels: data.map(row => row.dag_id),
+        datasets: [
+          {
+            label: "1 day success",
+            data: data.map(row => row["1_day_success"])
+          },
+          {
+            label: "7 days success",
+            data: data.map(row => row["7_days_success"])
+          },
+          {
+            label: "30 days success",
+            data: data.map(row => row["30_days_success"])
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+          x: {
+            type: 'logarithmic',
+            display: true,
+            title: {
+              display: true,
+              text: "Number of Dag Runs"
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Successful Dag Runs"
+          }
+        }
+      }
+    }
+  );
+
+  new Chart(
+    document.getElementById('failedChart'),
+    {
+      type: 'bar',
+      data: {
+        labels: data.map(row => row.dag_id),
+        datasets: [
+          {
+            label: "1 day failed",
+            data: data.map(row => row["1_day_failed"])
+          },
+          {
+            label: "7 days failed",
+            data: data.map(row => row["7_days_failed"])
+          },
+          {
+            label: "30 days failed",
+            data: data.map(row => row["30_days_failed"])
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        indexAxis: "y",
+        scales: {
+          x: {
+            type: "logarithmic",
+            display: true,
+            title: {
+              display: true,
+              text: "Number of Dag Runs"
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Failed Dag Runs"
+          }
+        }
+      }
+    }
+  );
+</script>
+{% endblock %}
