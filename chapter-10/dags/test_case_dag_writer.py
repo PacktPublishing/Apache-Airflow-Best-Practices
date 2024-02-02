@@ -74,7 +74,7 @@ with DAG(
     tests.append(PythonOperator(
         task_id = "{{task.name}}",
         python_callable = _test_case,
-        op_args = [{{task.time}}]
+        op_args = [{{task.value}}]
         ))
     {% endfor %}
 
