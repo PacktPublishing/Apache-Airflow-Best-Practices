@@ -274,7 +274,7 @@ def _generate_case():
     tests = []
 
     for i in range(randint(1, 10)):
-        tests.append(dict(name=f"{choice(left)}_{choice(right)}", time=randint(0, 10)))
+        tests.append(dict(name=f"{choice(left)}_{choice(right)}", value=randint(0, 10)))
 
     return json.dumps(tests)
 
