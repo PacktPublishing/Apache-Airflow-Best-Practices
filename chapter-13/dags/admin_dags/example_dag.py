@@ -120,9 +120,7 @@ with DAG(
 ) as dag:
 
     create_users = BashOperator(task_id="add_users", bash_command=_add_users)
-    
     create_roles = PythonOperator(task_id="create_roles",python_callable=_create_roles)
-    # sync_roles = PythonOperator(task_id="sync_roles", callable=_sync_roles)
 
 
 
