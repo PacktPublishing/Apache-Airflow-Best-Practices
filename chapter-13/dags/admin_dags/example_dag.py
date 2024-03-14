@@ -64,8 +64,8 @@ RESOURCE_XCOM = "XComs"
 
 _add_users = """
 
-airflow users create -e user_1.test.com -f user -l one -p user_1 -r Viewer -u user_1
-airflow users create -e user_2.test.com -f user -l one -p user_2 -r Viewer -u user_2
+airflow users create -e user_1.test.com -f user -l one -p user_1 -r Public -u user_1
+airflow users create -e user_2.test.com -f user -l one -p user_2 -r Public -u user_2
 """
 
 def _create_roles():
