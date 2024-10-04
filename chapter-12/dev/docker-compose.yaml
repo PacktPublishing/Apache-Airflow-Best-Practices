@@ -7,7 +7,7 @@ x-airflow-common:
     context: ..
     dockerfile: dev/Dockerfile
     args:
-      IMAGE_NAME: "${IMAGE_NAME:-apache/airflow:2.8.0}"
+      IMAGE_NAME: "${IMAGE_NAME:-apache/airflow:2.10.2}"
   user: "${AIRFLOW_UID}:0"
   environment:
     &airflow-common-env

@@ -22,4 +22,4 @@ def init():
         shell=True,
     )
 
-    g.commit("-am 'chapter-10 initialized via angreal'")
+    g.commit("-am 'chapter-12 initialized via angreal'")

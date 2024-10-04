@@ -8,7 +8,13 @@ from airflow.operators.python import BranchPythonOperator, PythonOperator
 
 from airflow import DAG
 from airflow.models import DagBag
-from airflow.auth.managers.fab.cli_commands.utils import get_application_builder
+
+try:
+    from airflow.auth.managers.fab.cli_commands.utils import get_application_builder
+except:
+    from airflow.providers.fab.auth_manager.cli_commands.utils import get_application_builder
+
+
 from airflow.security import permissions
 
 
