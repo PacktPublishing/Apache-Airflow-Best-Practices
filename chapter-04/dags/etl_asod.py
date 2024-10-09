@@ -6,8 +6,8 @@ import requests
 import requests.exceptions as request_exceptions
 from datetime import date
 from airflow import DAG
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
 from airflow.decorators import task
 from datetime import datetime, timedelta 
 
