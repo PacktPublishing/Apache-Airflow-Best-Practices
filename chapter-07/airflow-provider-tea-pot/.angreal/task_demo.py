@@ -14,7 +14,7 @@ demo = angreal.command_group(name="demo", about="commands for controlling the de
 @angreal.command(name="start", about="start services for example dags")
 def demo_start():
     subprocess.run(
-        	(f"docker-compose -f {docker_compose} build --no-cache && docker-compose -f {docker_compose} up -d"),
+        	(f"docker compose -f {docker_compose} build --no-cache && docker compose -f {docker_compose} up -d"),
             shell=True,
             cwd=cwd
     )
@@ -24,7 +24,7 @@ def demo_start():
 @angreal.command(name="stop", about="stop services for example dags")
 def demo_stop():
     subprocess.run(
-        	(f"docker-compose -f {docker_compose} down"),
+        	(f"docker compose -f {docker_compose} down"),
             shell=True,
             cwd=cwd
     )
@@ -34,7 +34,7 @@ def demo_stop():
 @angreal.command(name="clean", about="shut down services and remove files")
 def demo_clean():
     subprocess.run(
-        	(f"docker-compose -f {docker_compose} down --volumes --remove-orphans", f"rm -rf {logs}"),
+        	(f"docker compose -f {docker_compose} down --volumes --remove-orphans", f"rm -rf {logs}"),
             shell=True,
             cwd=cwd
     )
