@@ -15,7 +15,7 @@ def success_callback(context):
         """
     
     slack_alert = SlackWebhookOperator(
-        task_id=‘slack_test’,
+        task_id="slack-test",
         http_conn_id='slack_callbacks',
         webhook_token=slack_webhook_token,
         message=slack_msg,

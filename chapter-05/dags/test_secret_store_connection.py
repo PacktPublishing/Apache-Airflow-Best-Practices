@@ -4,8 +4,8 @@ from datetime import datetime
 from airflow.hooks.base_hook import BaseHook
 
 def test_secret_connection():
-    conn = BaseHook.get_connection("mydb") # Replace "mydb" with the
-    actual connection ID from the secret store
+    conn = BaseHook.get_connection("mydb") # Replace "mydb" with the actual connection ID from the secret store
+    
     print(f"Connection Host: {conn.host}")
 
 dag = DAG(
