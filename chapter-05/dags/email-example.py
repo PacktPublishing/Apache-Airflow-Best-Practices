@@ -1,8 +1,8 @@
 from datetime import datetime
 from airflow import DAG
-from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
-from airflow.operators.email_operator import EmailOperator
+from airflow.operators.dummy import DummyOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.email import EmailOperator
 
 smtp_user = 'kenvandoorn@gmail.com'
 
