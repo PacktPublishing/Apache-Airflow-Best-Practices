@@ -23,7 +23,7 @@ If you feel this book is for you, get your [copy](https://www.amazon.com/Apache-
 alt="https://www.packtpub.com/" border="5" /></a>
 
 ## Instructions and Navigations
-All of the code is organized into folders. For example, Chapter-04.
+All of the code is organized into folders. For example, Chapter-04. 
 
 The code will look like the following:
 ```
@@ -53,6 +53,16 @@ With the following software and hardware list you can run all code files present
 | 2-12 | Python 3.9+ | Windows, macOS, or Linux |
 | 2-12 | Docker | Windows, macOS, or Linux |
 | 2-12 | Postgres | Windows, macOS, or Linux |
+
+We used the [angreal](https://github.com/angreal/angreal) to provide development environments and interactions for consumption. To install `pip install angreal` and then from any folder the following commands will be available for execution as a sub command to angreal. 
+(e.g. if you wish to run the demo environment just use `angreal demo`) 
+
+```bash
+    demo         commands for controlling the demo environment
+    dev-setup    setup a development environment
+    help         Print this message or the help of the given subcommand(s)
+    test         commands for executing tests
+```
 
 ## Related products
 * Data Engineering Best Practices [[Packt]](https://www.packtpub.com/en-in/product/data-engineering-best-practices-9781803244983) [[Amazon]](https://www.amazon.com/Data-Engineering-Best-Practices-cost-effective/dp/1803244984/ref=sr_1_1?crid=1EESICPK5H9KE&dib=eyJ2IjoiMSJ9.DrrB6027W3PkH39y07z9UUSmzpq9ATt6ETVgHF8MnZ8m6J22loUIArJzetKpZU_0eacquoF9R40TPbDWHAEa3hYTVzhJAsciVw_rf9hXlU2wwVtGtyrGdI-zcy6818Q16Yt5NyKRLTsz0HN1V8_3t14N6O9Uk4z-D0r15SIuawdfDdi6oL5VzQg_tAnVpBRNTzFvKtCGM2yAKsjsGD_7hAsbeQMGFQuF2-opyQLv2Ao.nT4aXTxzhk8CAvmqAwZEMUaBOHqpsfLbwTbwRVkNiiI&dib_tag=se&keywords=Data+Engineering+Best+Practices&qid=1728623158&sprefix=data+engineering+best+practices%2Caps%2C507&sr=8-1)
