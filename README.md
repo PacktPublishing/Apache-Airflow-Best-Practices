@@ -23,7 +23,7 @@ If you feel this book is for you, get your [copy](https://www.amazon.com/Apache-
 alt="https://www.packtpub.com/" border="5" /></a>
 
 ## Instructions and Navigations
-All of the code is organized into folders. For example, Chapter-04. 
+All of the code is organized into folders. For example, chapter-04. 
 
 The code will look like the following:
 ```
@@ -45,14 +45,14 @@ The code sources and examples in this book were primarily developed with the ass
 would have access to Docker and Docker Compose. We also make some assumptions that you have
 a passing familiarity with Python, Kubernetes, and Docker.
 
-With the following software and hardware list you can run all code files present in the book (Chapter 1-13).
+With the following software and hardware list you can run all code files present in the book.
 ### Software and Hardware List
-| Chapter | Software required | OS required |
-| -------- | ------------------------------------ | ----------------------------------- |
-| 2-12 | Airflow 2.0+ | Windows, macOS, or Linux |
-| 2-12 | Python 3.9+ | Windows, macOS, or Linux |
-| 2-12 | Docker | Windows, macOS, or Linux |
-| 2-12 | Postgres | Windows, macOS, or Linux |
+| Software required | OS required |
+| ------------------------------------ | ----------------------------------- |
+| Airflow 2.0+ | Windows, macOS, or Linux |
+| Python 3.9+ | Windows, macOS, or Linux |
+| Docker | Windows, macOS, or Linux |
+| Postgres | Windows, macOS, or Linux |
 
 We used the [angreal](https://github.com/angreal/angreal) to provide development environments and interactions for consumption. To install `pip install angreal` and then from any folder the following commands will be available for execution as a sub command to angreal. 
 (e.g. if you wish to run the demo environment just use `angreal demo`) 
